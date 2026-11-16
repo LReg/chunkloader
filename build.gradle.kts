@@ -6,22 +6,68 @@ group = "dev.anchorstack"
 // Die Release-Pipeline setzt die Version aus dem Tag, lokal gilt der Standardwert
 version = providers.gradleProperty("pluginVersion").getOrElse("0.1.0")
 
+// Minecraft-Versionen, fuer die je eine Jar entsteht. Der Code ist derselbe, gebaut wird gegen die jeweilige Paper-API.
+// Neue Version unterstuetzen: hier eintragen. Bricht dort etwas in der API, schlaegt genau dieser Build fehl.
+val mcVersions = listOf("26.2", "26.3")
+
 repositories {
     maven(url = "https://repo.papermc.io/repository/maven-public/") {
         name = "papermc"
     }
 }
 
-dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
-}
-
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(25))
 }
 
+// Die normale Compile-Konfiguration nutzt die aelteste Version, damit die IDE etwas zum Arbeiten hat
+dependencies {
+    compileOnly("io.papermc.paper:paper-api:${mcVersions.first()}.build.+")
+}
+
 tasks.processResources {
     filesMatching("plugin.yml") {
-        expand("version" to project.version)
+        expand("version" to project.version, "apiVersion" to mcVersions.first())
     }
+}
+
+// Die Standard-Jar entfaellt, es gibt nur die Jars je Minecraft-Version
+tasks.jar {
+    enabled = false
+}
+
+val versionJars = mcVersions.map { mc ->
+    val id = mc.replace('.', '_')
+
+    val api = configurations.create("paperApi_$id") {
+        isCanBeConsumed = false
+        isCanBeResolved = true
+        dependencies.add(project.dependencies.create("io.papermc.paper:paper-api:$mc.build.+"))
+    }
+
+    val compile = tasks.register<JavaCompile>("compileJava_$id") {
+        source(fileTree("src/main/java"))
+        classpath = api
+        destinationDirectory.set(layout.buildDirectory.dir("classes/java/$id"))
+        javaCompiler.set(javaToolchains.compilerFor(java.toolchain))
+    }
+
+    val resources = tasks.register<Copy>("processResources_$id") {
+        from("src/main/resources")
+        into(layout.buildDirectory.dir("resources/$id"))
+        filesMatching("plugin.yml") {
+            expand("version" to project.version, "apiVersion" to mc)
+        }
+    }
+
+    tasks.register<Jar>("jar_$id") {
+        archiveBaseName.set("anchorstack")
+        archiveClassifier.set("mc$mc")
+        from(compile.map { it.destinationDirectory })
+        from(resources)
+    }
+}
+
+tasks.assemble {
+    dependsOn(versionJars)
 }

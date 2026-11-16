@@ -25,6 +25,8 @@ public final class LoaderManager {
     private final Map<ChunkKey, Integer> tickets = new HashMap<>();
     /** Welche Chunks jeder Loader gerade haelt. So bleibt die Zaehlung stimmig, wenn sich ein Radius in der Config aendert. */
     private final Map<UUID, Set<ChunkKey>> held = new HashMap<>();
+    /** false, solange load-when-empty aus ist und niemand online ist: dann werden keine Chunks gehalten. */
+    private boolean active = true;
 
     public LoaderManager(AnchorstackPlugin plugin, LoaderStore store) {
         this.plugin = plugin;
@@ -45,8 +47,33 @@ public final class LoaderManager {
             index.clear();
             return;
         }
+        active = shouldBeActive();
         for (World world : Bukkit.getWorlds()) {
             activateWorld(world);
+        }
+    }
+
+    private boolean shouldBeActive() {
+        return plugin.getConfig().getBoolean("load-when-empty", true) || !Bukkit.getOnlinePlayers().isEmpty();
+    }
+
+    /** Haelt oder gibt die Chunks frei, je nachdem ob load-when-empty gilt oder Spieler online sind. */
+    public void updatePresence() {
+        boolean should = shouldBeActive();
+        if (should == active) {
+            return;
+        }
+        active = should;
+        for (Loader loader : loaders.values()) {
+            World world = Bukkit.getWorld(loader.world());
+            if (world == null) {
+                continue;
+            }
+            if (active) {
+                holdChunks(world, loader);
+            } else {
+                releaseChunks(world, loader);
+            }
         }
     }
 
@@ -148,6 +175,9 @@ public final class LoaderManager {
 
     /** Wird beim Laden einer Welt gerufen, auch beim Serverstart. */
     public void activateWorld(World world) {
+        if (!active) {
+            return;
+        }
         for (Loader loader : loaders.values()) {
             if (loader.world().equals(world.getUID())) {
                 holdChunks(world, loader);
@@ -166,11 +196,14 @@ public final class LoaderManager {
 
     /** Setzt die Tickets neu, etwa nach /anchorstack reload, wenn sich ein Radius in der Config geaendert hat. */
     public void refresh() {
+        active = shouldBeActive();
         for (Loader loader : loaders.values()) {
             World world = Bukkit.getWorld(loader.world());
             if (world != null) {
                 releaseChunks(world, loader);
-                holdChunks(world, loader);
+                if (active) {
+                    holdChunks(world, loader);
+                }
             }
         }
     }

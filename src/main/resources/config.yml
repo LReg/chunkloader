@@ -7,10 +7,16 @@ tiers:
 
 limits:
   # Loader pro Spieler, per Permission anchorstack.limit.<n> ueberschreibbar
-  per-player: 5
+  per-player: 7
   # Maximale Anzahl dauerhaft geladener Chunks auf dem ganzen Server
   max-total-chunks: 400
 
+
+# true: Die Chunks bleiben auch geladen, wenn kein Spieler auf dem Server ist.
+# false: Sie werden nur gehalten, solange mindestens ein Spieler online ist.
+# Hinweis: Setzt der Server pause-when-empty-seconds in der server.properties auf einen Wert ueber 0,
+# pausiert er ohne Spieler komplett, egal was hier steht.
+load-when-empty: true
 
 # Sekunden zwischen den Pruefungen, ob alle Saeulen noch stehen
 validate-interval-seconds: 300

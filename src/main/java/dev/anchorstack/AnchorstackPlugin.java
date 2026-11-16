@@ -1,6 +1,7 @@
 package dev.anchorstack;
 
 import dev.anchorstack.command.AnchorstackCommand;
+import dev.anchorstack.listener.PresenceListener;
 import dev.anchorstack.listener.StructureListener;
 import dev.anchorstack.listener.WorldListener;
 import dev.anchorstack.loader.BorderDisplay;
@@ -31,6 +32,7 @@ public final class AnchorstackPlugin extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new StructureListener(this, manager, border), this);
         getServer().getPluginManager().registerEvents(new WorldListener(this, manager), this);
+        getServer().getPluginManager().registerEvents(new PresenceListener(this, manager), this);
 
         AnchorstackCommand command = new AnchorstackCommand(this, manager);
         getCommand("anchorstack").setExecutor(command);
@@ -168,7 +170,7 @@ public final class AnchorstackPlugin extends JavaPlugin {
 
     /** Wie viele Loader ein Spieler haben darf: Config-Wert oder hoechste Permission anchorstack.limit.n. */
     public int limitFor(Player player) {
-        int max = getConfig().getInt("limits.per-player", 5);
+        int max = getConfig().getInt("limits.per-player", 7);
         for (var info : player.getEffectivePermissions()) {
             String perm = info.getPermission();
             if (info.getValue() && perm.startsWith("anchorstack.limit.")) {

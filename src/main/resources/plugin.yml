@@ -1,7 +1,7 @@
 name: Anchorstack
 version: '${version}'
 main: dev.anchorstack.AnchorstackPlugin
-api-version: '26.2'
+api-version: '${apiVersion}'
 description: Chunkloader aktiviert durch eine Drei-Block-Saeule aus Kupferblock, Obsidian und Blitzableiter.
 commands:
   anchorstack:

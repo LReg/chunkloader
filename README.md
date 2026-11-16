@@ -35,7 +35,8 @@ Die Reihenfolge beim Bauen ist egal. Der Loader aktiviert sich, sobald die Saeul
 Alles steht in `plugins/Anchorstack/config.yml`:
 
 - `tiers.<stufe>.radius`: Radius in Chunks (1 = 3x3, 2 = 5x5).
-- `limits.per-player`: Loader pro Spieler, per Permission `anchorstack.limit.<n>` ueberschreibbar.
+- `limits.per-player`: Loader pro Spieler (Standard 7), per Permission `anchorstack.limit.<n>` ueberschreibbar.
+- `load-when-empty`: `true` (Standard) haelt die Chunks auch ohne Spieler geladen, `false` nur solange jemand online ist. Setzt der Server `pause-when-empty-seconds` in der `server.properties` auf einen Wert ueber 0, pausiert er ohne Spieler komplett, egal was hier steht. Paper stellt das standardmaessig auf -1.
 - `limits.max-total-chunks`: Obergrenze fuer dauerhaft geladene Chunks auf dem ganzen Server.
 - `validate-interval-seconds`: Abstand der Pruefung, ob die Saeulen noch stehen.
 - `particle-interval-seconds`: Takt des Funkenrings, 0 schaltet ihn ab.
@@ -50,7 +51,9 @@ Java 25 wird gebraucht, Gradle bringt der Wrapper mit.
 
     ./gradlew build
 
-Unter Windows `gradlew.bat build`. Die Jar liegt danach in `build/libs/` und kommt in den `plugins`-Ordner des Paper-Servers.
+Unter Windows `gradlew.bat build`. Es entsteht je Minecraft-Version eine Jar in `build/libs/`, zum Beispiel `anchorstack-1.0.2-mc26.2.jar` und `anchorstack-1.0.2-mc26.3.jar`. Nimm die Jar, die zur Version deines Paper-Servers passt, und lege sie in den `plugins`-Ordner.
+
+Alle Jars entstehen aus demselben Code, es gibt keine Branches pro Version. Die Liste der Versionen steht oben in `build.gradle.kts` (`mcVersions`). Fuer jede Version wird gegen die passende Paper-API kompiliert und `api-version` in der `plugin.yml` entsprechend gesetzt. Bricht eine neue Version etwas in der API, schlaegt nur der Build dieser Version fehl.
 
 ## Release
 
