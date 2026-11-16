@@ -54,7 +54,7 @@ public final class LoaderManager {
     }
 
     private boolean shouldBeActive() {
-        return plugin.getConfig().getBoolean("load-when-empty", true) || !Bukkit.getOnlinePlayers().isEmpty();
+        return plugin.getConfig().getBoolean("load-when-empty", false) || !Bukkit.getOnlinePlayers().isEmpty();
     }
 
     /** Haelt oder gibt die Chunks frei, je nachdem ob load-when-empty gilt oder Spieler online sind. */

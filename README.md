@@ -36,7 +36,7 @@ Alles steht in `plugins/Anchorstack/config.yml`:
 
 - `tiers.<stufe>.radius`: Radius in Chunks (1 = 3x3, 2 = 5x5).
 - `limits.per-player`: Loader pro Spieler (Standard 7), per Permission `anchorstack.limit.<n>` ueberschreibbar.
-- `load-when-empty`: `true` (Standard) haelt die Chunks auch ohne Spieler geladen, `false` nur solange jemand online ist. Setzt der Server `pause-when-empty-seconds` in der `server.properties` auf einen Wert ueber 0, pausiert er ohne Spieler komplett, egal was hier steht. Paper stellt das standardmaessig auf -1.
+- `load-when-empty`: `false` (Standard) haelt die Chunks nur, solange mindestens ein Spieler online ist. `true` haelt sie auch ohne Spieler geladen. Setzt der Server `pause-when-empty-seconds` in der `server.properties` auf einen Wert ueber 0, pausiert er ohne Spieler komplett, egal was hier steht. Paper stellt das standardmaessig auf -1.
 - `limits.max-total-chunks`: Obergrenze fuer dauerhaft geladene Chunks auf dem ganzen Server.
 - `validate-interval-seconds`: Abstand der Pruefung, ob die Saeulen noch stehen.
 - `particle-interval-seconds`: Takt des Funkenrings, 0 schaltet ihn ab.

@@ -16,7 +16,7 @@ limits:
 # false: Sie werden nur gehalten, solange mindestens ein Spieler online ist.
 # Hinweis: Setzt der Server pause-when-empty-seconds in der server.properties auf einen Wert ueber 0,
 # pausiert er ohne Spieler komplett, egal was hier steht.
-load-when-empty: true
+load-when-empty: false
 
 # Sekunden zwischen den Pruefungen, ob alle Saeulen noch stehen
 validate-interval-seconds: 300
