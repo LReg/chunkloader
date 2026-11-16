@@ -1,18 +1,25 @@
 package dev.anchorstack.loader;
 
 import dev.anchorstack.AnchorstackPlugin;
+import com.destroystokyo.paper.ParticleBuilder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 /** Zeigt die Grenzen des geladenen Bereichs eine Zeit lang als Partikel, die von der Saeule nach aussen laufen. */
 public final class BorderDisplay {
 
     private static final double REVEAL_PER_TICK = 1.5;
+    /** Spieler weiter als das von der Saeule entfernt sehen die Grenzen nicht. */
+    private static final double VIEW_DISTANCE = 80;
     private static final Particle.DustOptions DUST = new Particle.DustOptions(Color.AQUA, 1.2f);
 
     private final AnchorstackPlugin plugin;
@@ -47,14 +54,34 @@ public final class BorderDisplay {
                 it.remove();
                 continue;
             }
-            if (!world.getPlayers().isEmpty() && world.isChunkLoaded(loader.x() >> 4, loader.z() >> 4)) {
-                draw(world, loader, ticks);
+            if (world.isChunkLoaded(loader.x() >> 4, loader.z() >> 4)) {
+                List<Player> nearby = nearbyPlayers(world, loader);
+                if (!nearby.isEmpty()) {
+                    draw(world, loader, ticks, nearby);
+                }
             }
             entry.setValue(ticks + step);
         }
     }
 
-    private void draw(World world, Loader loader, int ticks) {
+    /** Spieler, die die Grenzen sehen sollen. Der Rand liegt bei Stufe 2 bis zu 48 Bloecke von der Saeule weg. */
+    private List<Player> nearbyPlayers(World world, Loader loader) {
+        double max = VIEW_DISTANCE * VIEW_DISTANCE;
+        double cx = loader.x() + 0.5;
+        double cz = loader.z() + 0.5;
+        List<Player> result = new ArrayList<>();
+        for (Player player : world.getPlayers()) {
+            Location at = player.getLocation();
+            double dx = at.getX() - cx;
+            double dz = at.getZ() - cz;
+            if (dx * dx + dz * dz <= max) {
+                result.add(player);
+            }
+        }
+        return result;
+    }
+
+    private void draw(World world, Loader loader, int ticks, List<Player> receivers) {
         int r = manager.radius(loader.tier());
         int cx = loader.x() >> 4;
         int cz = loader.z() >> 4;
@@ -66,26 +93,28 @@ public final class BorderDisplay {
         double y = loader.y() + 1.5;
 
         for (int x = minX; x <= maxX; x += 2) {
-            point(world, loader, reveal, x, y, minZ);
-            point(world, loader, reveal, x, y, maxZ);
+            point(world, loader, receivers, reveal, x, y, minZ);
+            point(world, loader, receivers, reveal, x, y, maxZ);
         }
         for (int z = minZ + 2; z < maxZ; z += 2) {
-            point(world, loader, reveal, minX, y, z);
-            point(world, loader, reveal, maxX, y, z);
+            point(world, loader, receivers, reveal, minX, y, z);
+            point(world, loader, receivers, reveal, maxX, y, z);
         }
         int[][] corners = {{minX, minZ}, {minX, maxZ}, {maxX, minZ}, {maxX, maxZ}};
         for (int[] corner : corners) {
             for (int h = 0; h <= 6; h++) {
-                point(world, loader, reveal, corner[0], loader.y() + 0.5 + h, corner[1]);
+                point(world, loader, receivers, reveal, corner[0], loader.y() + 0.5 + h, corner[1]);
             }
         }
     }
 
-    private void point(World world, Loader loader, double reveal, double x, double y, double z) {
+    private void point(World world, Loader loader, List<Player> receivers, double reveal, double x, double y, double z) {
         double dx = x - (loader.x() + 0.5);
         double dz = z - (loader.z() + 0.5);
         if (Math.sqrt(dx * dx + dz * dz) <= reveal) {
-            world.spawnParticle(Particle.DUST, x, y, z, 1, 0, 0, 0, 0, DUST);
+            // force hebt das 32-Bloecke-Limit des Clients auf, sonst sieht man den Rand bei Stufe 2 nicht
+            new ParticleBuilder(Particle.DUST).location(world, x, y, z).count(1).data(DUST)
+                    .force(true).receivers(receivers).spawn();
         }
     }
 }

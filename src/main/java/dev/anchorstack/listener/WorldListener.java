@@ -42,7 +42,8 @@ public final class WorldListener implements Listener {
                     || (loader.x() >> 4) != chunk.getX() || (loader.z() >> 4) != chunk.getZ()) {
                 continue;
             }
-            plugin.check(loader);
+            // Einen Tick spaeter, damit der Chunk fertig geladen ist und Tickets nicht mitten im Ladeereignis geaendert werden
+            plugin.getServer().getScheduler().runTask(plugin, () -> plugin.check(loader));
         }
     }
 }

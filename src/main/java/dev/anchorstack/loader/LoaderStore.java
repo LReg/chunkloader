@@ -14,6 +14,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public final class LoaderStore {
 
@@ -33,6 +34,17 @@ public final class LoaderStore {
         try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             List<Loader> list = gson.fromJson(reader, LIST);
             return list == null ? new ArrayList<>() : new ArrayList<>(list);
+        }
+    }
+
+    /** Kopiert eine nicht lesbare Datei zur Seite, damit sie beim naechsten Speichern nicht ueberschrieben wird. */
+    public Optional<Path> backupBroken() {
+        Path target = file.resolveSibling(file.getFileName() + ".broken-" + System.currentTimeMillis());
+        try {
+            Files.copy(file, target);
+            return Optional.of(target);
+        } catch (IOException e) {
+            return Optional.empty();
         }
     }
 

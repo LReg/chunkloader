@@ -23,6 +23,8 @@ public final class LoaderManager {
     private final Map<BlockKey, UUID> index = new HashMap<>();
     /** Wie viele Loader einen Chunk halten. Das Plugin-Ticket gibt es nur einmal pro Chunk. */
     private final Map<ChunkKey, Integer> tickets = new HashMap<>();
+    /** Welche Chunks jeder Loader gerade haelt. So bleibt die Zaehlung stimmig, wenn sich ein Radius in der Config aendert. */
+    private final Map<UUID, Set<ChunkKey>> held = new HashMap<>();
 
     public LoaderManager(AnchorstackPlugin plugin, LoaderStore store) {
         this.plugin = plugin;
@@ -37,6 +39,8 @@ public final class LoaderManager {
             }
         } catch (IOException | RuntimeException e) {
             plugin.getLogger().log(Level.SEVERE, "loaders.json konnte nicht gelesen werden, es wird nichts geladen", e);
+            store.backupBroken().ifPresent(path ->
+                    plugin.getLogger().severe("Die kaputte Datei wurde als " + path.getFileName() + " gesichert."));
             loaders.clear();
             index.clear();
             return;
@@ -73,14 +77,22 @@ public final class LoaderManager {
         return id == null ? null : loaders.get(id);
     }
 
+    /** Findet einen Loader ueber den Anfang seiner ID. Mindestens 4 Zeichen, und nur wenn es genau einen Treffer gibt. */
     public Loader findByPrefix(String prefix, UUID onlyOwner) {
+        if (prefix.length() < 4) {
+            return null;
+        }
         String p = prefix.toLowerCase();
+        Loader found = null;
         for (Loader loader : loaders.values()) {
             if (loader.id().toString().startsWith(p) && (onlyOwner == null || loader.owner().equals(onlyOwner))) {
-                return loader;
+                if (found != null) {
+                    return null;
+                }
+                found = loader;
             }
         }
-        return null;
+        return found;
     }
 
     public int radius(int tier) {
@@ -145,6 +157,22 @@ public final class LoaderManager {
 
     public void deactivateWorld(World world) {
         tickets.keySet().removeIf(key -> key.world().equals(world.getUID()));
+        for (Loader loader : loaders.values()) {
+            if (loader.world().equals(world.getUID())) {
+                held.remove(loader.id());
+            }
+        }
+    }
+
+    /** Setzt die Tickets neu, etwa nach /anchorstack reload, wenn sich ein Radius in der Config geaendert hat. */
+    public void refresh() {
+        for (Loader loader : loaders.values()) {
+            World world = Bukkit.getWorld(loader.world());
+            if (world != null) {
+                releaseChunks(world, loader);
+                holdChunks(world, loader);
+            }
+        }
     }
 
     /**
@@ -191,7 +219,12 @@ public final class LoaderManager {
     }
 
     private void holdChunks(World world, Loader loader) {
-        for (ChunkKey key : chunksOf(world, loader)) {
+        if (held.containsKey(loader.id())) {
+            return;
+        }
+        Set<ChunkKey> keys = chunksOf(world, loader);
+        held.put(loader.id(), keys);
+        for (ChunkKey key : keys) {
             if (tickets.merge(key, 1, Integer::sum) == 1) {
                 world.addPluginChunkTicket(key.x(), key.z(), plugin);
             }
@@ -199,7 +232,11 @@ public final class LoaderManager {
     }
 
     private void releaseChunks(World world, Loader loader) {
-        for (ChunkKey key : chunksOf(world, loader)) {
+        Set<ChunkKey> keys = held.remove(loader.id());
+        if (keys == null) {
+            return;
+        }
+        for (ChunkKey key : keys) {
             Integer count = tickets.get(key);
             if (count == null) {
                 continue;

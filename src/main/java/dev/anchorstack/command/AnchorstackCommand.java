@@ -40,6 +40,7 @@ public final class AnchorstackCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 plugin.reloadConfig();
+                manager.refresh();
                 plugin.startTasks();
                 sender.sendMessage(plugin.msg("reloaded"));
             }
@@ -49,7 +50,11 @@ public final class AnchorstackCommand implements CommandExecutor, TabCompleter {
     }
 
     private void list(CommandSender sender) {
-        if (!(sender instanceof Player player) || !sender.hasPermission("anchorstack.use")) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(plugin.msg("players-only"));
+            return;
+        }
+        if (!sender.hasPermission("anchorstack.use")) {
             sender.sendMessage(plugin.msg("no-permission"));
             return;
         }
@@ -64,7 +69,11 @@ public final class AnchorstackCommand implements CommandExecutor, TabCompleter {
     }
 
     private void remove(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player) || !sender.hasPermission("anchorstack.use")) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(plugin.msg("players-only"));
+            return;
+        }
+        if (!sender.hasPermission("anchorstack.use")) {
             sender.sendMessage(plugin.msg("no-permission"));
             return;
         }

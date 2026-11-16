@@ -26,6 +26,7 @@ border:
 messages:
   created: "<green>Chunkloader aktiviert: Stufe <white>{tier}</white>, <white>{chunks}</white> Chunks."
   no-permission: "<red>Dafuer fehlt dir die Berechtigung."
+  players-only: "<red>Dieser Befehl geht nur als Spieler."
   limit-player: "<red>Du hast schon <white>{max}</white> Chunkloader."
   limit-total: "<red>Der Server hat sein Chunk-Limit erreicht."
   removed: "<yellow>Dein Chunkloader bei <white>{pos}</white> ist ausgefallen: {reason}"

@@ -16,5 +16,5 @@ permissions:
     description: Chunkloader bauen
     default: true
   anchorstack.admin:
-    description: Alle Chunkloader verwalten, fremde abbauen
+    description: Alle Chunkloader verwalten und aufraeumen
     default: op
