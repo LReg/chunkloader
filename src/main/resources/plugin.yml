@@ -1,0 +1,20 @@
+name: Anchorstack
+version: '${version}'
+main: dev.anchorstack.AnchorstackPlugin
+api-version: '26.2'
+description: Chunkloader aktiviert durch eine Drei-Block-Saeule aus Kupferblock, Obsidian und Blitzableiter.
+commands:
+  anchorstack:
+    description: Chunkloader verwalten
+    usage: /anchorstack <list|remove|admin|reload>
+    aliases: [as]
+permissions:
+  anchorstack.use:
+    description: Eigene Chunkloader ansehen und entfernen
+    default: true
+  anchorstack.create:
+    description: Chunkloader bauen
+    default: true
+  anchorstack.admin:
+    description: Alle Chunkloader verwalten, fremde abbauen
+    default: op

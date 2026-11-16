@@ -1,0 +1,40 @@
+# Radius in Chunks um den Chunk der Saeule (1 = 3x3, 2 = 5x5)
+tiers:
+  1:
+    radius: 1
+  2:
+    radius: 2
+
+limits:
+  # Loader pro Spieler, per Permission anchorstack.limit.<n> ueberschreibbar
+  per-player: 5
+  # Maximale Anzahl dauerhaft geladener Chunks auf dem ganzen Server
+  max-total-chunks: 400
+
+
+# Sekunden zwischen den Pruefungen, ob alle Saeulen noch stehen
+validate-interval-seconds: 300
+
+# Sekunden zwischen dem kleinen Funkenring an der Spitze aktiver Loader, 0 schaltet ihn ab
+particle-interval-seconds: 4
+
+# Anzeige der Chunk-Grenzen nach dem Bauen und nach einem Rechtsklick auf die Saeule
+border:
+  duration-seconds: 20
+  interval-ticks: 10
+
+messages:
+  created: "<green>Chunkloader aktiviert: Stufe <white>{tier}</white>, <white>{chunks}</white> Chunks."
+  no-permission: "<red>Dafuer fehlt dir die Berechtigung."
+  limit-player: "<red>Du hast schon <white>{max}</white> Chunkloader."
+  limit-total: "<red>Der Server hat sein Chunk-Limit erreicht."
+  removed: "<yellow>Dein Chunkloader bei <white>{pos}</white> ist ausgefallen: {reason}"
+  reason-broken: "Die Saeule wurde zerstoert."
+  reason-invalid: "Die Saeule steht nicht mehr richtig."
+  reason-manual: "Du hast ihn entfernt."
+  upgraded: "<green>Chunkloader umgestellt: Stufe <white>{tier}</white>, <white>{chunks}</white> Chunks."
+  list-empty: "<gray>Du hast keine Chunkloader."
+  list-entry: "<gray>{id} <white>{world} {pos}</white> Stufe {tier}"
+  not-found: "<red>Kein Chunkloader mit dieser ID."
+  reloaded: "<green>Konfiguration neu geladen."
+  usage: "<gray>/anchorstack list | remove <id> | admin <list|tp|remove> | reload"
